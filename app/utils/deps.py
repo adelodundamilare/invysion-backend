@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.crud.user import user as user_crud
 from app.models.user import User
+from app.crud import folder as folder_crud
 
 http_bearer = HTTPBearer()
 
@@ -29,3 +30,17 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+def is_folder_owner(
+    folder_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    folder = folder_crud.get_folder(db, folder_id=folder_id)
+    if not folder or folder.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this folder"
+        )
+    return folder
