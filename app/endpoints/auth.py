@@ -134,24 +134,7 @@ async def google_login(
     db: Session = Depends(get_db)
 ):
     try:
-        user_data = await oauth_service.verify_google_token(token)
-        if not user_data:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Google token"
-            )
-
-        user = user_crud.get_by_email(db, email=user_data["email"])
-        if not user:
-            user = user_crud.create(
-                db,
-                obj_in=UserCreate(
-                    email=user_data["email"],
-                    full_name=user_data["name"],
-                    auth_provider="google"
-                )
-            )
-
+        user = await user_service.get_or_create_google_user(db, token)
         access_token = create_access_token(data={"sub": user.email})
         logger.info(f"Google login successful: {user.email}")
         return {"access_token": access_token, "token_type": "bearer"}
@@ -159,24 +142,24 @@ async def google_login(
         logger.error(f"Google login failed: {str(e)}")
         raise
 
-@router.post("/login/apple", response_model=auth_schema.Token)
-async def apple_login(
-    token: str,
-    db: Session = Depends(get_db)
-):
-    try:
-        user_data = await oauth_service.verify_apple_token(token)
-        if not user_data:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Apple token"
-            )
+# @router.post("/login/apple", response_model=auth_schema.Token)
+# async def apple_login(
+#     token: str,
+#     db: Session = Depends(get_db)
+# ):
+#     try:
+#         user_data = await oauth_service.verify_apple_token(token)
+#         if not user_data:
+#             raise HTTPException(
+#                 status_code=status.HTTP_401_UNAUTHORIZED,
+#                 detail="Invalid Apple token"
+#             )
 
-        # Similar implementation as Google login
-        pass
-    except Exception as e:
-        logger.error(f"Apple login failed: {str(e)}")
-        raise
+#         # Similar implementation as Google login
+#         pass
+#     except Exception as e:
+#         logger.error(f"Apple login failed: {str(e)}")
+#         raise
 
 
 @router.post("/request-forgot-password")

@@ -1,6 +1,9 @@
 from fastapi import HTTPException, status
 from app.crud.user import user as user_crud
 from app.core.security import pwd_context
+from .oauth import OAuthService
+
+oauth_service = OAuthService()
 
 class UserService:
     def create_user(self, db, user_data):
@@ -10,6 +13,27 @@ class UserService:
                 detail="Email already registered"
             )
         return user_crud.create(db, obj_in=user_data)
+
+    async def get_or_create_google_user(self, db, token):
+        user_data = await oauth_service.verify_google_token(token)
+        if not user_data:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Google token"
+            )
+
+        user = user_crud.get_by_email(db, email=user_data["email"])
+        if not user:
+            user = user_crud.create(
+                db,
+                obj_in=UserCreate(
+                    email=user_data["email"],
+                    full_name=user_data["name"],
+                    auth_provider="google"
+                )
+            )
+
+        return user
 
     def update_user(self, db, user, user_data):
         # should not change email or password

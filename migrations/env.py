@@ -10,6 +10,7 @@ load_dotenv()
 # This is where your Base (metadata) object is imported
 from app.core.database import Base  # Replace 'myapp.models' with your actual models module
 from app.models.user import User
+from app.models.folder import Folder
 
 # Alembic Config object, which provides access to the .ini file values
 config = context.config
