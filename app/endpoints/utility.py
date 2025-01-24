@@ -1,13 +1,6 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.crud.user import user as user_crud
-from app.schemas import user as user_schema
-from app.utils.deps import get_current_user
+from fastapi import APIRouter, UploadFile, File
 from app.utils.logger import setup_logger
-from app.models.user import User
-from app.services.email import EmailService
 from app.services.user import UserService
 from app.services.cloudinary import CloudinaryService
 
