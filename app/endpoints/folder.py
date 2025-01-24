@@ -5,13 +5,13 @@ from app.core.database import get_db
 from app.schemas import folder as folder_schema
 from app.utils.logger import setup_logger
 from app.services import folder as folder_service
+from app.services import note as note_service
 from app.utils.deps import get_current_user, is_folder_owner
 from app.models.user import User
 
 logger = setup_logger("folder_api", "folder.log")
 
 router = APIRouter()
-
 
 @router.post("/")
 async def create_folder(folder_data: folder_schema.FolderCreate,
@@ -53,6 +53,20 @@ async def get_folder(folder_id: int,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+@router.get("/{folder_id}/notes/")
+def get_folder_notes(
+    folder_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(is_folder_owner),
+    db: Session = Depends(get_db)
+):
+    try:
+        return note_service.get_folder_notes(db=db, folder_id=folder_id, skip=skip, limit=limit)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
 @router.put("/{folder_id}")
 async def update_folder(folder_id: int,
