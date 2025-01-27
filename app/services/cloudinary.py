@@ -11,6 +11,7 @@ cloudinary.config(
 class CloudinaryService:
 
     def upload_file(self, file: bytes):
-        result = cloudinary.uploader.upload(file)
+        data = {"resource_type": "auto"}
+        result = cloudinary.uploader.upload(file, **data)
         return result["secure_url"]
 

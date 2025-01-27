@@ -3,19 +3,17 @@ from sqlalchemy.orm import Session
 from app.models.note import Note
 from fastapi.encoders import jsonable_encoder
 
-def create_note(db: Session, user_id: int, folder_id: int, title: str, content: Optional[str] = None,
-                summary: Optional[str] = None, recording_url: Optional[str] = None,
-                is_pinned: bool = False, is_archived: bool = False, color: Optional[str] = None) -> Note:
+def create_note(
+    db: Session,
+    user_id: int,
+    folder_id: int,
+    title: str,
+    **kwargs) -> Note:
     note = Note(
         user_id=user_id,
         folder_id=folder_id,
         title=title,
-        content=content,
-        summary=summary,
-        recording_url=recording_url,
-        is_pinned=is_pinned,
-        is_archived=is_archived,
-        color=color
+        **kwargs
     )
     db.add(note)
     db.commit()

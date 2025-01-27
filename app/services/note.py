@@ -1,4 +1,7 @@
-from typing import List, Optional
+from typing import List
+import tempfile
+import os
+from mutagen import File
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud import note as note_crud
@@ -6,8 +9,8 @@ from app.crud import folder as folder_crud
 from app.schemas.note import NoteCreate, NoteUpdate
 
 
-def create_note(db: Session, user_id: int, note_in: NoteCreate):
-    folder = folder_crud.get_folder(db, folder_id=note_in.folder_id)
+def create_note(db: Session, user_id: int, note_in):
+    folder = folder_crud.get_folder(db, folder_id=note_in['folder_id'])
     if not folder:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -17,7 +20,8 @@ def create_note(db: Session, user_id: int, note_in: NoteCreate):
     return note_crud.create_note(
         db=db,
         user_id=user_id,
-        **note_in.model_dump(exclude_unset=True)
+        # **note_in.model_dump(exclude_unset=True)
+        **note_in
     )
 
 
@@ -56,3 +60,34 @@ def toggle_pin_note(db: Session, note_id: int):
 
 def toggle_archive_note(db: Session, note_id: int):
     return note_crud.toggle_archive_note(db=db, note_id=note_id)
+
+
+def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
+    with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+        temp_file.write(file_bytes)
+        temp_path = temp_file.name
+
+    try:
+        audio = File(temp_path)
+
+        if audio is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid audio file format"
+            )
+
+        # Get duration in seconds
+        duration = audio.info.length
+
+        max_duration = 600  # 10 minutes
+        if duration > max_duration:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Audio file too long. Maximum duration is {max_duration} seconds"
+            )
+
+        return duration
+
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)

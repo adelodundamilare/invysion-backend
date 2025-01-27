@@ -58,3 +58,14 @@ def is_note_owner(
             detail="Not authorized to access this Note"
         )
     return note
+
+def is_admin(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user

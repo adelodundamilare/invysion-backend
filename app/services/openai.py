@@ -1,4 +1,5 @@
 import os
+import tempfile
 from typing import Optional
 from openai import OpenAI
 from fastapi import HTTPException, status
@@ -8,23 +9,26 @@ from app.utils.logger import setup_logger
 logger = setup_logger("openai_service", "openai.log")
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-def transcribe_audio(audio_file_path: str) -> Optional[str]:
+def transcribe_audio(audio_bytes: bytes) -> Optional[str]:
     try:
-        if not os.path.exists(audio_file_path):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Audio file not found"
-            )
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+            temp_file.write(audio_bytes)
+            temp_path = temp_file.name
 
-        with open(audio_file_path, "rb") as audio_file:
-            response = client.audio.transcriptions.create(
-                model="whisper-1",
-                response_format="verbose_json",
-                # timestamp_granularities=["word"]
-                file=audio_file
-            )
+        try:
+            with open(temp_path, "rb") as audio_file:
+                response = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    response_format="verbose_json",
+                    # timestamp_granularities=["word"],
+                    file=audio_file
+                )
 
-        return response.text
+            return response.text
+
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
 
     except Exception as e:
         logger.error(f"Error transcribing audio: {str(e)}")
@@ -32,6 +36,35 @@ def transcribe_audio(audio_file_path: str) -> Optional[str]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to transcribe audio: {str(e)}"
         )
+
+# def transcribe_audio(audio_file: str) -> Optional[str]:
+#     try:
+#         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+#             temp_file.write(audio_file)
+#             temp_path = temp_file.name
+
+#         if not os.path.exists(audio_file_path):
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail="Audio file not found"
+#             )
+
+#         with open(audio_file_path, "rb") as audio_file:
+#             response = client.audio.transcriptions.create(
+#                 model="whisper-1",
+#                 response_format="verbose_json",
+#                 # timestamp_granularities=["word"]
+#                 file=audio_file
+#             )
+
+#         return response.text
+
+#     except Exception as e:
+#         logger.error(f"Error transcribing audio: {str(e)}")
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to transcribe audio: {str(e)}"
+#         )
 
 # system_prompt = """
 # You are a helpful assistant for the company ZyntriQix. Your task is to correct

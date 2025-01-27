@@ -1,10 +1,10 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.endpoints.utility import upload_to_cloud
+from app.services.cloudinary import CloudinaryService
 from app.utils.deps import get_current_user, is_note_owner
-from app.schemas.note import Note, NoteCreate, NoteUpdate
+from app.schemas.note import Note, NoteUpdate
 from app.services import note as note_service
 from app.services import openai as openai_service
 from app.models.user import User
@@ -12,14 +12,18 @@ from app.utils.logger import setup_logger
 
 logger = setup_logger("note_api", "note.log")
 router = APIRouter()
+cloudinary_service = CloudinaryService()
 
-@router.post("/", response_model=Note)
-async def create_note(file: UploadFile = File(...),  current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.post("/")
+async def create_note(folder_id: int, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         file_bytes = await file.read()
-        transcribed_text = await openai_service.transcribe_audio(file_bytes)
-        summarized_text = await openai_service.summarize_text(transcribed_text)
-        recording_url = await upload_to_cloud(file_bytes)
+
+        duration = note_service.validate_audio_file_and_get_length(file_bytes)
+
+        transcribed_text = openai_service.transcribe_audio(file_bytes)
+        summarized_text = openai_service.summarize_text(transcribed_text)
+        recording_url = cloudinary_service.upload_file(file_bytes)
 
         # save recording to cloudinary
         return note_service.create_note(db=db, user_id=current_user.id, note_in={
@@ -27,7 +31,8 @@ async def create_note(file: UploadFile = File(...),  current_user: User = Depend
             "content": transcribed_text,
             "summary": summarized_text,
             "recording_url": recording_url,
-            "folder_id": None #error
+            "duration": duration,
+            "folder_id": folder_id #error
         })
     except Exception as e:
         logger.error(f"Error: {str(e)}")

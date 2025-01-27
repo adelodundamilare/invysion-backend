@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.endpoints import auth, account, utility, folder, note
+from app.endpoints import auth, account, payment, plan, subscription, utility, folder, note
 from fastapi.exceptions import RequestValidationError
 from app.middleware.exceptions import global_exception_handler
 
@@ -30,6 +30,9 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(account.router, prefix="/account", tags=["account"])
 app.include_router(folder.router, prefix="/folder", tags=["folder"])
 app.include_router(note.router, prefix="/note", tags=["note"])
+app.include_router(plan.router, prefix="/plan", tags=["plan"])
+app.include_router(payment.router, prefix="/payment", tags=["payment"])
+app.include_router(subscription.router, prefix="/subscription", tags=["subscription"])
 app.include_router(utility.router, prefix="/utility", tags=["utility"])
 
 if __name__ == "__main__":

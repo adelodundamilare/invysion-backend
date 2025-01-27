@@ -12,6 +12,7 @@ from app.core.database import Base  # Replace 'myapp.models' with your actual mo
 from app.models.user import User
 from app.models.folder import Folder
 from app.models.note import Note
+from app.models.subscription import Subscription
 
 # Alembic Config object, which provides access to the .ini file values
 config = context.config

@@ -16,6 +16,8 @@ class User(Base):
     subscription_plan = Column(String, default="free")  # free, monthly, yearly
     auth_provider = Column(String, default="email")  # email, google, apple
     language = Column(String, nullable=True)
+    role = Column(String, nullable=True, default="user")
+    stripe_customer_id = Column(String, nullable=True)
     theme = Column(String, nullable=True)
     reset_code = Column(String, nullable=True)
     reset_code_expires_at = Column(DateTime, nullable=True)

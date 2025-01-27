@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     OPENAI_API_KEY: str
+    STRIPE_SECRET_KEY: str
 
     # Database Configuration
     DATABASE_HOST: str

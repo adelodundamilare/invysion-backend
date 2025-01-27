@@ -12,6 +12,7 @@ class Note(Base):
     content = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
     recording_url = Column(String(512), nullable=True)
+    duration = Column(Integer, nullable=True)
     is_pinned = Column(Boolean, default=False)
     is_archived = Column(Boolean, default=False)
     color = Column(String, nullable=True)
