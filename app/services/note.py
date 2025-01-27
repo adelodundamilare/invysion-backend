@@ -1,12 +1,13 @@
 from typing import List
 import tempfile
 import os
-from mutagen import File
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud import note as note_crud
 from app.crud import folder as folder_crud
-from app.schemas.note import NoteCreate, NoteUpdate
+from app.schemas.note import NoteUpdate
+from mutagen import File, MutagenError
+from mutagen.mp3 import MP3, HeaderNotFoundError
 
 
 def create_note(db: Session, user_id: int, note_in):
@@ -71,6 +72,20 @@ def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
         audio = File(temp_path)
 
         if audio is None:
+            try:
+                audio = MP3(temp_path)
+            except HeaderNotFoundError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid MP3 file: Could not find MPEG frame headers"
+                )
+            except MutagenError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid audio file: {str(e)}"
+                )
+
+        if audio is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid audio file format"
@@ -87,6 +102,14 @@ def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
             )
 
         return duration
+
+    except Exception as e:
+        if not isinstance(e, HTTPException):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error processing audio file: {str(e)}"
+            )
+        raise e
 
     finally:
         if os.path.exists(temp_path):
