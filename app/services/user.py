@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from app.crud.user import user as user_crud
 from app.core.security import pwd_context
+from app.schemas.auth import UserCreate
 from .oauth import OAuthService
 
 oauth_service = OAuthService()
