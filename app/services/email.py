@@ -1,11 +1,10 @@
 import os
-import smtplib
-import ssl
 import logging
+import requests
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from jinja2 import Environment, FileSystemLoader, select_autoescape, Template, TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
 
 from app.core.config import settings
 
@@ -58,7 +57,6 @@ class EmailService:
             logging.error(f"Error rendering email template {template_name}: {e}")
             raise
 
-
     @classmethod
     def send_email(
         cls,
@@ -68,7 +66,7 @@ class EmailService:
         template_context: dict,
     ):
         """
-        Send an email using a specified template.
+        Send an email using a specified template via SendGrid API.
 
         :param to_email: Recipient email address
         :param subject: Email subject
@@ -76,37 +74,51 @@ class EmailService:
         :param template_context: Dictionary of template variables
         """
         try:
-            # Create message container
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = settings.EMAILS_FROM_NAME
-            msg['To'] = to_email
-
             # Render HTML content
             try:
                 template = templates.get_template(template_name)
                 html_content = template.render(template_context)
+                logging.info(f"Rendered HTML content: {html_content}")  # Log the rendered content
             except TemplateNotFound:
                 logging.error(f"Template '{template_name}' not found.")
                 raise ValueError(f"Template '{template_name}' does not exist.")
 
-            # Attach HTML content
-            msg.attach(MIMEText(html_content, 'html'))
+            payload = {
+                "personalizations": [
+                    {
+                        "to": [{"email": to_email}],
+                        "subject": subject
+                    }
+                ],
+                "from": {"email": settings.EMAILS_FROM_NAME},
+                # "from": {"email": "info@dakebfarms.com.ng"},
+                "content": [
+                    {
+                        "type": "text/html",
+                        "value": html_content
+                    }
+                ]
+            }
 
-            # Create secure SSL context
-            context = ssl.create_default_context()
+            # SendGrid API endpoint
+            url = "https://api.sendgrid.com/v3/mail/send"
 
-            # Send email
-            with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
-                server.starttls(context=context)
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                server.sendmail(msg['From'], [to_email], msg.as_string())
+            # Headers with API key
+            headers = {
+                "Authorization": f"Bearer {settings.SENDGRID_API_KEY}",
+                "Content-Type": "application/json"
+            }
 
-            logging.info(f"Email sent successfully to {to_email}")
+            # Make the API request
+            response = requests.post(url, json=payload, headers=headers)
 
-        except smtplib.SMTPException as smtp_error:
-            logging.error(f"SMTP error: {smtp_error}")
-            raise
+            # Check for errors
+            if response.status_code != 202:
+                logging.error(f"Failed to send email. Status code: {response.status_code}, Response: {response.text}")
+                raise Exception(f"SendGrid API error: {response.text}")
+
+            logging.info(f"Email sent successfully to {to_email}. Status code: {response.status_code}")
+
         except Exception as e:
-            logging.error(f"Unexpected error: {e}")
+            logging.error(f"Error sending email: {e}")
             raise

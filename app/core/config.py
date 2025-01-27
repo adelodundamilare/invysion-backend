@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str
     STRIPE_SECRET_KEY: str
+    SENDGRID_API_KEY: str
 
     # Database Configuration
     DATABASE_HOST: str
