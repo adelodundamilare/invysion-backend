@@ -25,9 +25,9 @@ class UserResponse(BaseModel):
     id: int
     full_name: str
     email: EmailStr
-    profession: str
-    role: str
-    theme: str
+    profession: Optional[str] = None
+    role: Optional[str] = None
+    theme: Optional[str] = None
     subscription_plan: SubscriptionPlan
     auth_provider: str
     is_verified: bool
