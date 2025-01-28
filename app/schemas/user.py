@@ -28,6 +28,7 @@ class UserResponse(BaseModel):
     profession: Optional[str] = None
     role: Optional[str] = None
     theme: Optional[str] = None
+    avatar: Optional[str] = None
     subscription_plan: SubscriptionPlan
     auth_provider: str
     is_verified: bool
