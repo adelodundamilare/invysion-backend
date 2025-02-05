@@ -3,6 +3,7 @@ from app.crud.user import user as user_crud
 from app.core.security import pwd_context
 from app.schemas.auth import UserCreate
 from .oauth import OAuthService
+from app.services.email import EmailService
 import secrets
 import string
 
@@ -28,7 +29,7 @@ class UserService:
         user = user_crud.get_by_email(db, email=user_data["email"])
         if not user:
             characters = string.ascii_letters + string.digits + string.punctuation
-            password = ''.join(secrets.choice(characters) for _ in range(length))
+            password = ''.join(secrets.choice(characters) for _ in range(8))
 
             user = user_crud.create(
                 db,
@@ -45,6 +46,15 @@ class UserService:
                 "verification_code_expires_at": None,
                 "is_verified": True
             })
+
+            EmailService.send_email(
+                to_email=user.email,
+                subject="Welcome",
+                template_name="welcome.html",
+                template_context={
+                    "name": user.full_name
+                }
+            )
 
         return user
 
