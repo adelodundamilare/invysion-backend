@@ -16,11 +16,7 @@ class EmailService:
 
     @classmethod
     def _get_template_env(cls):
-        """
-        Initialize Jinja2 template environment if not already initialized
-        """
         if cls._template_env is None:
-            # Dynamically find the templates directory
             template_dir = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
                 '..',
@@ -35,15 +31,7 @@ class EmailService:
 
     @classmethod
     def render_template(cls, template_name: str, context: dict) -> str:
-        """
-        Render an email template
-
-        :param template_name: Name of the template file
-        :param context: Dictionary of template variables
-        :return: Rendered HTML template
-        """
         try:
-            # Add default context variables
             default_context = {
                 'company_name': 'Your Company',
                 'current_year': datetime.now().year,
@@ -65,16 +53,7 @@ class EmailService:
         template_name: str,
         template_context: dict,
     ):
-        """
-        Send an email using a specified template via SendGrid API.
-
-        :param to_email: Recipient email address
-        :param subject: Email subject
-        :param template_name: Name of the template file
-        :param template_context: Dictionary of template variables
-        """
         try:
-            # Render HTML content
             try:
                 template = templates.get_template(template_name)
                 html_content = template.render(template_context)
@@ -90,8 +69,7 @@ class EmailService:
                         "subject": subject
                     }
                 ],
-                "from": {"email": settings.EMAILS_FROM_NAME},
-                # "from": {"email": "info@dakebfarms.com.ng"},
+                "from": {"email": settings.EMAILS_FROM_EMAIL},
                 "content": [
                     {
                         "type": "text/html",
@@ -100,19 +78,15 @@ class EmailService:
                 ]
             }
 
-            # SendGrid API endpoint
             url = "https://api.sendgrid.com/v3/mail/send"
 
-            # Headers with API key
             headers = {
                 "Authorization": f"Bearer {settings.SENDGRID_API_KEY}",
                 "Content-Type": "application/json"
             }
 
-            # Make the API request
             response = requests.post(url, json=payload, headers=headers)
 
-            # Check for errors
             if response.status_code != 202:
                 logging.error(f"Failed to send email. Status code: {response.status_code}, Response: {response.text}")
                 raise Exception(f"SendGrid API error: {response.text}")

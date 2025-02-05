@@ -128,7 +128,7 @@ async def email_login(user_data: auth_schema.VerifyEmail, db: Session = Depends(
         logger.error(f"Error: {str(e)}")
         raise
 
-@router.post("/login/google", response_model=auth_schema.Token)
+@router.get("/login/google", response_model=auth_schema.Token)
 async def google_login(
     token: str,
     db: Session = Depends(get_db)
