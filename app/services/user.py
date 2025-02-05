@@ -3,6 +3,8 @@ from app.crud.user import user as user_crud
 from app.core.security import pwd_context
 from app.schemas.auth import UserCreate
 from .oauth import OAuthService
+import secrets
+import string
 
 oauth_service = OAuthService()
 
@@ -25,12 +27,16 @@ class UserService:
 
         user = user_crud.get_by_email(db, email=user_data["email"])
         if not user:
+            characters = string.ascii_letters + string.digits + string.punctuation
+            password = ''.join(secrets.choice(characters) for _ in range(length))
+
             user = user_crud.create(
                 db,
                 obj_in=UserCreate(
                     email=user_data["email"],
                     full_name=user_data["name"],
-                    auth_provider="google"
+                    auth_provider="google",
+                    password=password
                 )
             )
 
