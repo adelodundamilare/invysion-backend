@@ -41,7 +41,7 @@ class UserService:
                 )
             )
 
-            user_service.update_user(db, user, user_data={
+            update_user(db, user, user_data={
                 "verification_code": None,
                 "verification_code_expires_at": None,
                 "is_verified": True
