@@ -12,6 +12,7 @@ class UserCreate(BaseModel):
     full_name: str
     email: EmailStr
     password: str
+    role: Optional[str] = "user"
     subscription_plan: Optional[SubscriptionPlan] = SubscriptionPlan.FREE
 
 class UserUpdate(BaseModel):
@@ -32,6 +33,7 @@ class UserResponse(BaseModel):
     subscription_plan: SubscriptionPlan
     auth_provider: str
     is_verified: bool
+    is_active: bool
 
     class Config:
         from_attributes = True

@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core.security import create_access_token
-from app.crud.user import user as user_crud
 from app.schemas import auth as auth_schema
 from app.services.email import EmailService
 from app.utils.logger import setup_logger
@@ -78,7 +77,7 @@ async def email_login(user_data: auth_schema.UserLogin, db: Session = Depends(ge
     try:
         user = user_service.find_user_by_email(db, email=user_data.email)
 
-        if not user.is_verified:
+        if user.role != 'admin' and not user.is_verified:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Kindly verify account to continue"

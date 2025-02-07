@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from requests import Session
 from app.crud.user import user as user_crud
 from app.core.security import pwd_context
 from app.schemas.auth import UserCreate
@@ -59,11 +60,23 @@ class UserService:
         return user
 
     def update_user(self, db, user, user_data):
-        # should not change email or password
         return user_crud.update(db, db_obj=user, obj_in=user_data)
+
+    def user_with_email_exists(self, db, email):
+        user = user_crud.get_by_email(db, email=email)
+        return user is not None
 
     def find_user_by_email(self, db, email):
         user = user_crud.get_by_email(db, email=email)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
+
+    def find_user_by_id(self, db, user_id):
+        user = user_crud.get(db, id=user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -83,3 +96,15 @@ class UserService:
             user,
             {"hashed_password": pwd_context.hash(new_password)}
         )
+
+    def get_users(self, db: Session, *, page: int = 1, size: int = 100):
+        return user_crud.get_users(db, page=page, size=size)
+
+    def delete_user(self, db: Session, user_id: int):
+        user = user_crud.delete(db, id=user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user

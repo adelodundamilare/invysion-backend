@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.endpoints import auth, account, payment, plan, subscription, utility, folder, note
+from app.endpoints.admin import user as admin_user
 from fastapi.exceptions import RequestValidationError
 from app.middleware.exceptions import global_exception_handler
 
@@ -34,6 +35,7 @@ app.include_router(plan.router, prefix="/plan", tags=["plan"])
 app.include_router(payment.router, prefix="/payment", tags=["payment"])
 app.include_router(subscription.router, prefix="/subscription", tags=["subscription"])
 app.include_router(utility.router, prefix="/utility", tags=["utility"])
+app.include_router(admin_user.router, prefix="/admin/users", tags=["admin"])
 
 if __name__ == "__main__":
     import uvicorn
