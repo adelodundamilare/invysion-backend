@@ -6,16 +6,18 @@ from app.services.cloudinary import CloudinaryService
 from app.utils.deps import get_current_user, is_note_owner
 from app.schemas.note import Note, NoteUpdate
 from app.services import note as note_service
+from app.services import folder as folder_service
 from app.services import openai as openai_service
 from app.models.user import User
 from app.utils.logger import setup_logger
+from typing import Optional
 
 logger = setup_logger("note_api", "note.log")
 router = APIRouter()
 cloudinary_service = CloudinaryService()
 
 @router.post("/")
-async def create_note(folder_id: int, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(folder_id: Optional[int] = None, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         file_bytes = await file.read()
 
@@ -24,6 +26,9 @@ async def create_note(folder_id: int, file: UploadFile = File(...), current_user
         transcribed_text = openai_service.transcribe_audio(file_bytes)
         summarized_text = openai_service.summarize_text(transcribed_text)
         recording_url = cloudinary_service.upload_file(file_bytes)
+
+        if not folder_id:
+            folder_id = folder_service.get_or_create_uncategorized_folder(db, current_user.id)
 
         # save recording to cloudinary
         return note_service.create_note(db=db, user_id=current_user.id, note_in={

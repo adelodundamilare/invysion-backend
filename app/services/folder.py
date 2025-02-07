@@ -41,3 +41,29 @@ def delete_folder(db: Session, folder_id: int) -> bool:
             detail="Folder not found"
         )
     return True
+
+def get_or_create_uncategorized_folder(db: Session, user_id: int) -> int:
+    try:
+        folder = folder_crud.get_user_folder_by_name(
+            db=db,
+            user_id=user_id,
+            name="Uncategorized"
+        )
+
+        if folder:
+            return folder.id
+
+        # If not found, create it
+        folder_data = folder_schema.FolderCreate(name="Uncategorized")
+        new_folder = folder_crud.create_folder(
+            db=db,
+            user_id=user_id,
+            name=folder_data.name
+        )
+        return new_folder.id
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not get or create uncategorized folder: {str(e)}"
+        )
