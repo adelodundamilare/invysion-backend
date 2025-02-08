@@ -96,6 +96,62 @@ def _get_or_create_customer(self, db: Session, user_id: int):
 
     return customer
 
+async def get_total_active_subscriptions():
+    try:
+        params = {"limit": 100, "status": "active"}
+        total_subscriptions = 0
+        has_more = True
+        last_subscription = None
+
+        while has_more:
+            if last_subscription:
+                params["starting_after"] = last_subscription
+
+            subscriptions = stripe.Subscription.list(**params)
+            total_subscriptions += len(subscriptions.data)
+
+            has_more = subscriptions.has_more
+            if has_more and subscriptions.data:
+                last_subscription = subscriptions.data[-1].id
+
+        return total_subscriptions
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+async def list_active_subscriptions(
+    limit: int = 100,
+    starting_after: str = None,
+    ending_before: str = None
+) -> dict:
+    try:
+        params = {
+            "limit": min(limit, 100),
+            "status": "active"
+        }
+
+        if starting_after:
+            params["starting_after"] = starting_after
+        if ending_before:
+            params["ending_before"] = ending_before
+
+        subscriptions = stripe.Subscription.list(**params)
+
+        return {
+            "data": subscriptions.data,
+            "has_more": subscriptions.has_more,
+            "total_count": len(subscriptions.data)
+        }
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
 def handle_webhook_event(self, event):
     """Handle Stripe webhook events"""
     try:

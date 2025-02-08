@@ -8,6 +8,8 @@ from app.endpoints.admin import folder as admin_folder
 from app.endpoints.admin import note as admin_note
 from app.endpoints.admin import misc as admin_misc
 from app.endpoints.admin import plan as admin_plan
+from app.endpoints.admin import payment as admin_payment
+from app.endpoints.admin import subscription as admin_subscription
 from fastapi.exceptions import RequestValidationError
 from app.middleware.exceptions import global_exception_handler
 
@@ -44,6 +46,8 @@ app.include_router(admin_folder.router, prefix="/admin/folders", tags=["admin.fo
 app.include_router(admin_note.router, prefix="/admin/notes", tags=["admin.notes"])
 app.include_router(admin_misc.router, prefix="/admin/misc", tags=["admin.misc"])
 app.include_router(admin_plan.router, prefix="/admin/plans", tags=["admin.plan"])
+app.include_router(admin_payment.router, prefix="/admin/payments", tags=["admin.payment"])
+app.include_router(admin_subscription.router, prefix="/admin/subscriptions", tags=["admin.subscription"])
 
 if __name__ == "__main__":
     import uvicorn
