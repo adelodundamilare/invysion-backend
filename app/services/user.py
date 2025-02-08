@@ -1,3 +1,4 @@
+from typing import Dict, List, Optional
 from fastapi import HTTPException, status
 from requests import Session
 from app.crud.user import user as user_crud
@@ -114,3 +115,25 @@ class UserService:
                 detail="User not found"
             )
         return user
+
+
+    def get_many(
+        self,
+        db: Session,
+        page: int = 1,
+        size: int = 100,
+        filters: Optional[Dict] = None
+    ):
+        if filters is None:
+            filters = {}
+
+        search = filters.get("name")
+        user_id = filters.get("user_id")
+
+        return user_crud.get_many(
+            db=db,
+            page=page,
+            size=size,
+            search=search,
+            user_id=user_id
+        )

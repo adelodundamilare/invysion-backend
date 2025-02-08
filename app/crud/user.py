@@ -47,4 +47,63 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             db.delete(obj)
             db.commit()
         return obj
+
+    def get_many(
+        self,
+        db: Session,
+        page: int = 1,
+        size: int = 100,
+        search: Optional[str] = None,
+        user_id: Optional[int] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = "asc"
+    ) -> dict:
+        query = db.query(User)
+
+        if search:
+            query = query.filter(User.email.ilike(f"%{search}%"))
+        if user_id:
+            query = query.filter(User.id == user_id)
+
+        total = query.count()
+        pages = (total + size - 1)
+        offset = (page - 1) * size
+
+        if sort_by:
+            sort_column = getattr(User, sort_by, None)
+            if sort_column:
+                if sort_order.lower() == 'desc':
+                    sort_column = sort_column.desc()
+                query = query.order_by(sort_column)
+
+        query = query.offset(offset).limit(size)
+
+        items = query.all()
+
+        with_user_response = []
+
+        for item in items:
+            item_dict = {
+                "id":item.id,
+                "email":item.email,
+                "full_name":item.full_name,
+                "avatar":item.avatar,
+                "created_at":item.created_at,
+                "updated_at":item.updated_at,
+                # Add other UserResponse fields as needed
+            }
+
+            with_user_response.append(item_dict)
+
+        return {
+            'items': with_user_response,
+            'total': total,
+            'page': page,
+            'size': size,
+            'pages': pages,
+            'has_next': page < pages,
+            'has_previous': page > 1
+        }
+
 user = CRUDUser(User)
+

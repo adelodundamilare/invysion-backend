@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
 from app.utils.logger import setup_logger
@@ -14,15 +14,18 @@ user_service = UserService()
 
 logger = setup_logger("admin_user_api", "admin_user.log")
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("/")
 def get_users(
-    page: int = 1,
-    size: int = 20,
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(100, ge=1, le=1000, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search user by email"),
+    user_id: Optional[int] = Query(None, description="Filter by user ID"),
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
     try:
-        return user_service.get_users(db, page=page, size=size)
+        filters = {"email": search, "user_id": user_id}
+        return user_service.get_many(db, page=page, size=size, filters=filters)
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise
