@@ -71,7 +71,6 @@ def list_plans() -> List[dict]:
         )
 
 def update_plan(price_id: str, active: bool = True) -> dict:
-    """Update plan status in Stripe"""
     try:
         price = stripe.Price.modify(
             price_id,
@@ -94,7 +93,6 @@ def update_plan(price_id: str, active: bool = True) -> dict:
         )
 
 def delete_plan(price_id: str) -> bool:
-    """Delete a plan in Stripe (deactivate)"""
     try:
         price = stripe.Price.modify(
             price_id,

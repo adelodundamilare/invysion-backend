@@ -30,7 +30,6 @@ def get_users(
         logger.error(f"Error: {str(e)}")
         raise
 
-
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(
     user_id: int,
