@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+from app.schemas.user import UserResponse
+
 class FolderBase(BaseModel):
     name: str
 
@@ -19,3 +21,17 @@ class Folder(FolderBase):
 
     class Config:
         orm_mode = True
+
+class FolderResponse(BaseModel):
+    id: int
+    name: str
+    created_at: datetime
+    updated_at: datetime
+    user_id: int
+    user: UserResponse
+    items_count: int
+    total_size: int  # in bytes
+
+    class Config:
+        from_attributes = True
+        from_orm = True

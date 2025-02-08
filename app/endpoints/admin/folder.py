@@ -1,83 +1,55 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
 from app.models.user import User
 from app.utils.deps import is_admin
-from app.schemas.folder import Folder, FolderCreate, FolderUpdate
+from app.schemas.folder import Folder
 from app.services import folder as folder_service
+from app.utils.logger import setup_logger
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter()
+logger = setup_logger("admin_folder_api", "admin_folder.log")
 
-
-@router.get("/folders", response_model=List[Folder])
-def get_folders(
-    skip: int = 0,
-    limit: int = 100,
+@router.get("/")
+async def get_folders(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(100, ge=1, le=1000, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search folders by name"),
+    user_id: Optional[int] = Query(None, description="Filter by user ID"),
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Get all folders (admin only)"""
-    folders = folder_service.get_folders(db, skip=skip, limit=limit)
-    return folders
+    try:
+        filters = {"name": search, "user_id": user_id}
+        return folder_service.get_many(db, page=page, size=size, filters=filters)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
-
-@router.get("/folders/{folder_id}", response_model=Folder)
+@router.get("/{folder_id}")
 def get_folder(
     folder_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Get folder by ID (admin only)"""
-    folder = folder_service.get_folder(db, folder_id=folder_id)
-    if not folder:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Folder not found"
-        )
-    return folder
+    try:
+        folder = folder_service.get_folder(db, folder_id=folder_id)
+        return folder
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
-
-@router.post("/folders", response_model=Folder)
-def create_folder(
-    folder_in: FolderCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(is_admin)
-):
-    """Create new folder (admin only)"""
-    return folder_service.create_folder(db=db, folder_in=folder_in)
-
-
-@router.put("/folders/{folder_id}", response_model=Folder)
-def update_folder(
-    folder_id: int,
-    folder_in: FolderUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(is_admin)
-):
-    """Update folder (admin only)"""
-    folder = folder_service.get_folder(db, folder_id=folder_id)
-    if not folder:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Folder not found"
-        )
-    return folder_service.update_folder(db=db, folder=folder, folder_in=folder_in)
-
-
-@router.delete("/folders/{folder_id}")
+@router.delete("/{folder_id}")
 def delete_folder(
     folder_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Delete folder (admin only)"""
-    folder = folder_service.get_folder(db, folder_id=folder_id)
-    if not folder:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Folder not found"
-        )
-    folder_service.delete_folder(db=db, folder_id=folder_id)
-    return {"message": "Folder deleted successfully"}
+    try:
+        folder_service.delete_folder(db=db, folder_id=folder_id)
+        return {"message": "Folder deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise

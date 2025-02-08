@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud import folder as folder_crud
 from app.schemas import folder as folder_schema
-from typing import List
+from typing import Dict, List, Optional
 
 def create_folder(db: Session, user_id: int, folder_data: folder_schema.FolderCreate) -> folder_schema.Folder:
     try:
@@ -53,7 +53,6 @@ def get_or_create_uncategorized_folder(db: Session, user_id: int) -> int:
         if folder:
             return folder.id
 
-        # If not found, create it
         folder_data = folder_schema.FolderCreate(name="Uncategorized")
         new_folder = folder_crud.create_folder(
             db=db,
@@ -67,3 +66,23 @@ def get_or_create_uncategorized_folder(db: Session, user_id: int) -> int:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Could not get or create uncategorized folder: {str(e)}"
         )
+
+def get_many(
+    db: Session,
+    page: int = 1,
+    size: int = 100,
+    filters: Optional[Dict] = None
+) -> List[folder_schema.Folder]:
+    if filters is None:
+        filters = {}
+
+    search = filters.get("name")
+    user_id = filters.get("user_id")
+
+    return folder_crud.get_many(
+        db=db,
+        page=page,
+        size=size,
+        search=search,
+        user_id=user_id
+    )
