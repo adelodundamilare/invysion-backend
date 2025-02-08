@@ -72,7 +72,7 @@ async def resend_verification_code(user_data: auth_schema.UserEmail, db: Session
         logger.error(f"Error: {str(e)}")
         raise
 
-@router.post("/login/email", response_model=auth_schema.Token)
+@router.post("/login/email")
 async def email_login(user_data: auth_schema.UserLogin, db: Session = Depends(get_db)):
     try:
         user = user_service.find_user_by_email(db, email=user_data.email)
@@ -87,7 +87,7 @@ async def email_login(user_data: auth_schema.UserLogin, db: Session = Depends(ge
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
 
         access_token = create_access_token(data={"sub": user.email})
-        return {"access_token": access_token, "token_type": "bearer"}
+        return {"access_token": access_token, "token_type": "bearer", "user": {"email": user.email, "role": user.role, "full_name":user.full_name}}
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise
