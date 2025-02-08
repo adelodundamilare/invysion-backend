@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
-from app.crud.base import PaginatedResponse
 from app.utils.logger import setup_logger
 from app.utils.deps import is_admin
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
@@ -42,6 +41,17 @@ def get_user(
         logger.error(f"Error: {str(e)}")
         raise
 
+@router.get("/recent/signups", response_model=List[UserResponse])
+def get_recent_signups(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(is_admin)
+):
+    try:
+        return user_service.get_recent_signups(db=db, limit=limit)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
 @router.post("/", response_model=UserResponse)
 def create_user(

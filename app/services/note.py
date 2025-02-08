@@ -62,6 +62,9 @@ def toggle_pin_note(db: Session, note_id: int):
 def toggle_archive_note(db: Session, note_id: int):
     return note_crud.toggle_archive_note(db=db, note_id=note_id)
 
+def get_total_notes(db: Session) -> int:
+    return note_crud.get_total_notes_count(db=db)
+
 
 def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
     with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:

@@ -30,8 +30,8 @@ def get_notes_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100
 def get_notes_by_folder(db: Session, folder_id: int, skip: int = 0, limit: int = 100) -> List[Note]:
     return db.query(Note).filter(Note.folder_id == folder_id).offset(skip).limit(limit).all()
 
-def get_total_notes_count(db: Session, user_id: int) -> int:
-    return db.query(Note).filter(Note.user_id == user_id).count()
+def get_total_notes_count(db: Session) -> int:
+    return db.query(Note).count()
 
 def update_note(db: Session, note_id: int, note_in: dict) -> Optional[Note]:
     db_note = get_note(db, note_id)
@@ -75,6 +75,9 @@ def toggle_archive_note(db: Session, note_id: int) -> Optional[Note]:
     db.commit()
     db.refresh(note)
     return note
+
+def get_total_notes(db: Session) -> int:
+    return db.query(Note).count()
 
 
 def get_many(

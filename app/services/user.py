@@ -100,6 +100,12 @@ class UserService:
     def get_users(self, db: Session, *, page: int = 1, size: int = 100):
         return user_crud.get_users(db, page=page, size=size)
 
+    def get_recent_signups(self, db: Session, *, limit: int = 10):
+        return user_crud.get_recent_signups(db, limit=limit)
+
+    def get_total_users(self, db: Session) -> int:
+        return user_crud.get_total_users(db)
+
     def delete_user(self, db: Session, user_id: int):
         user = user_crud.delete(db, id=user_id)
         if not user:

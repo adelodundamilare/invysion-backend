@@ -6,6 +6,7 @@ from app.endpoints import auth, account, payment, plan, subscription, utility, f
 from app.endpoints.admin import user as admin_user
 from app.endpoints.admin import folder as admin_folder
 from app.endpoints.admin import note as admin_note
+from app.endpoints.admin import misc as admin_misc
 from fastapi.exceptions import RequestValidationError
 from app.middleware.exceptions import global_exception_handler
 
@@ -40,6 +41,7 @@ app.include_router(utility.router, prefix="/utility", tags=["utility"])
 app.include_router(admin_user.router, prefix="/admin/users", tags=["admin.users"])
 app.include_router(admin_folder.router, prefix="/admin/folders", tags=["admin.folders"])
 app.include_router(admin_note.router, prefix="/admin/notes", tags=["admin.notes"])
+app.include_router(admin_misc.router, prefix="/admin/misc", tags=["admin.misc"])
 
 if __name__ == "__main__":
     import uvicorn
