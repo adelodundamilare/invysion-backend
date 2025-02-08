@@ -4,8 +4,6 @@ from typing import List, Optional
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from app.schemas.user import UserResponse
-
 def create_folder(db: Session, user_id: int, name: str) -> Folder:
     folder = Folder(user_id=user_id, name=name)
     db.add(folder)

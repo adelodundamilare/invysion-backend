@@ -1,11 +1,11 @@
-from typing import List
+from typing import Dict, List, Optional
 import tempfile
 import os
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud import note as note_crud
 from app.crud import folder as folder_crud
-from app.schemas.note import NoteUpdate
+from app.schemas.note import Note, NoteUpdate
 from mutagen import File, MutagenError
 from mutagen.mp3 import MP3, HeaderNotFoundError
 
@@ -114,3 +114,24 @@ def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
+
+
+def get_many(
+    db: Session,
+    page: int = 1,
+    size: int = 100,
+    filters: Optional[Dict] = None
+) -> List[Note]:
+    if filters is None:
+        filters = {}
+
+    search = filters.get("name")
+    user_id = filters.get("user_id")
+
+    return note_crud.get_many(
+        db=db,
+        page=page,
+        size=size,
+        search=search,
+        user_id=user_id
+    )

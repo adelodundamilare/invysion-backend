@@ -2,6 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.note import Note
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import joinedload
 
 def create_note(
     db: Session,
@@ -74,3 +75,67 @@ def toggle_archive_note(db: Session, note_id: int) -> Optional[Note]:
     db.commit()
     db.refresh(note)
     return note
+
+
+def get_many(
+    db: Session,
+    page: int = 1,
+    size: int = 100,
+    search: Optional[str] = None,
+    user_id: Optional[int] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = "asc"
+) -> dict:
+    query = db.query(Note).options(joinedload(Note.user))
+
+    if search:
+        query = query.filter(Note.title.ilike(f"%{search}%"))
+    if user_id:
+        query = query.filter(Note.user_id == user_id)
+
+    total = query.count()
+    pages = (total + size - 1) // size
+    offset = (page - 1) * size
+
+    if sort_by:
+        sort_column = getattr(Note, sort_by, None)
+        if sort_column:
+            if sort_order.lower() == 'desc':
+                sort_column = sort_column.desc()
+            query = query.order_by(sort_column)
+
+    query = query.offset(offset).limit(size)
+
+    items = query.all()
+
+    with_user_response = []
+
+    for item in items:
+        item_dict = {
+            'id': item.id,
+            'title': item.title,
+            'created_at': item.created_at,
+            'updated_at': item.updated_at,
+            # Add any other Folder attributes you need
+        }
+
+        if item.user:
+            item_dict['user'] = {
+                "id":item.user.id,
+                "email":item.user.email,
+                "full_name":item.user.full_name,
+                "avatar":item.user.avatar,
+                # Add other UserResponse fields as needed
+            }
+
+        with_user_response.append(item_dict)
+
+    return {
+        'items': with_user_response,
+        'total': total,
+        'page': page,
+        'size': size,
+        'pages': pages,
+        'has_next': page < pages,
+        'has_previous': page > 1
+    }

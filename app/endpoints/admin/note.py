@@ -1,83 +1,54 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Optional
 
 from app.core.database import get_db
 from app.models.user import User
 from app.utils.deps import is_admin
-from app.schemas.note import Note, NoteCreate, NoteUpdate
 from app.services import note as note_service
+from app.utils.logger import setup_logger
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter()
+logger = setup_logger("admin_note_api", "admin_note.log")
 
-
-@router.get("/notes", response_model=List[Note])
-def get_notes(
-    skip: int = 0,
-    limit: int = 100,
+@router.get("/")
+async def get_notes(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(100, ge=1, le=1000, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search notes by title"),
+    user_id: Optional[int] = Query(None, description="Filter by user ID"),
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Get all notes (admin only)"""
-    notes = note_service.get_folder_notes(db, folder_id=None, skip=skip, limit=limit)
-    return notes
+    try:
+        filters = {"title": search, "user_id": user_id}
+        return note_service.get_many(db, page=page, size=size, filters=filters)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
-
-@router.get("/notes/{note_id}", response_model=Note)
+@router.get("/{note_id}")
 def get_note(
     note_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Get note by ID (admin only)"""
-    note = note_service.get_note(db, note_id=note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found"
-        )
-    return note
+    try:
+        note = note_service.get_note(db, note_id=note_id)
+        return note
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise
 
-
-@router.post("/notes", response_model=Note)
-def create_note(
-    note_in: NoteCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(is_admin)
-):
-    """Create new note (admin only)"""
-    return note_service.create_note(db=db, note_in=note_in)
-
-
-@router.put("/notes/{note_id}", response_model=Note)
-def update_note(
-    note_id: int,
-    note_in: NoteUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(is_admin)
-):
-    """Update note (admin only)"""
-    note = note_service.get_note(db, note_id=note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found"
-        )
-    return note_service.update_note(db=db, note_id=note_id, note_in=note_in)
-
-
-@router.delete("/notes/{note_id}")
+@router.delete("/{note_id}")
 def delete_note(
     note_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(is_admin)
 ):
-    """Delete note (admin only)"""
-    note = note_service.get_note(db, note_id=note_id)
-    if not note:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Note not found"
-        )
-    note_service.delete_note(db=db, note_id=note_id)
-    return {"message": "Note deleted successfully"}
+    try:
+        note_service.delete_note(db=db, note_id=note_id)
+        return {"message": "Note deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise

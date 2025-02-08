@@ -30,3 +30,4 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     folders = relationship("Folder", back_populates="user")
+    notes = relationship("Note", back_populates="user")

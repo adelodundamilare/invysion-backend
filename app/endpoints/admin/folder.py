@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 
 from app.core.database import get_db
 from app.models.user import User
 from app.utils.deps import is_admin
-from app.schemas.folder import Folder
 from app.services import folder as folder_service
 from app.utils.logger import setup_logger
 
