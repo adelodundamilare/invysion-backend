@@ -33,6 +33,9 @@ def get_notes_by_folder(db: Session, folder_id: int, skip: int = 0, limit: int =
 def get_total_notes_count(db: Session) -> int:
     return db.query(Note).count()
 
+def get_total_user_notes_count(db: Session, user_id: int) -> int:
+    return db.query(Note).filter(Note.user_id == user_id).count()
+
 def update_note(db: Session, note_id: int, note_in: dict) -> Optional[Note]:
     db_note = get_note(db, note_id)
     if not db_note:

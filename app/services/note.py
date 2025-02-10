@@ -32,7 +32,7 @@ def get_note(db: Session, note_id: int):
 
 def get_user_notes(db: Session, user_id: int, page: int = 1, per_page: int = 10, skip: int = 0, limit: int = 100):
     notes = note_crud.get_notes_by_user(db=db, user_id=user_id, skip=skip, limit=limit)
-    total = note_crud.get_total_notes_count(db=db, user_id=user_id)
+    total = note_crud.get_total_user_notes_count(db=db, user_id=user_id)
 
     return {
         "items": notes,
