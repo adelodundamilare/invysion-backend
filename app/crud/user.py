@@ -40,6 +40,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_total_users(self, db: Session) -> int:
         return db.query(User).count()
 
+    def find_by_stripe_id(self, db: Session, id: str) -> Optional[User]:
+        return db.query(User).filter(User.stripe_customer_id == id).first()
 
     def delete(self, db: Session, *, id: int) -> User:
         obj = db.query(User).get(id)

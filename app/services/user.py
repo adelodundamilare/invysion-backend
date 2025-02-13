@@ -76,6 +76,15 @@ class UserService:
             )
         return user
 
+    def find_user_by_stripe_id(self, db, id):
+        user = user_crud.find_by_stripe_id(db, id=id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
+
     def find_user_by_id(self, db, user_id):
         user = user_crud.get(db, id=user_id)
         if not user:

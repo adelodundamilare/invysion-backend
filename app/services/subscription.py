@@ -6,6 +6,9 @@ from app.core.config import settings
 from app.models.subscription import Subscription
 from sqlalchemy.orm import Session
 from app.models.user import User
+from app.services.user import UserService
+
+user_service = UserService()
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -152,17 +155,20 @@ async def list_active_subscriptions(
             detail=str(e)
         )
 
-def handle_webhook_event(self, event):
-    """Handle Stripe webhook events"""
+def handle_webhook_event(db, event):
     try:
+        if event.type == 'customer.subscription.created':
+            _handle_subscription_created(db, event.data.object)
         if event.type == 'customer.subscription.updated':
-            _handle_subscription_updated(event.data.object)
+            _handle_subscription_updated(db, event.data.object)
         elif event.type == 'customer.subscription.deleted':
             _handle_subscription_deleted(event.data.object)
         elif event.type == 'invoice.payment_succeeded':
             _handle_payment_succeeded(event.data.object)
         elif event.type == 'invoice.payment_failed':
             _handle_payment_failed(event.data.object)
+        elif event.type == 'customer.created':
+            _handle_customer_created(db, event.data.object)
 
     except Exception as e:
         raise HTTPException(
@@ -170,18 +176,45 @@ def handle_webhook_event(self, event):
             detail=str(e)
         )
 
-def _handle_subscription_updated(self, subscription_object):
-    # Update subscription status in database
+def _handle_subscription_created(db, subscription_object):
+    plan_id = subscription_object.get('plan').get('id')
+    user = user_service.find_user_by_stripe_id(db, id=subscription_object.get('customer'))
+    user_service.update_user(db, user, user_data={"subscription_plan": plan_id})
+
+    # todo, send an email
     pass
 
-def _handle_subscription_deleted(self, subscription_object):
-    # Handle subscription deletion
+def _handle_customer_created(db, subscription_object):
+    customer_email = subscription_object.email
+    customer_id = subscription_object.id
+
+    user = user_service.find_user_by_email(db, email=customer_email)
+    user_service.update_user(db, user, user_data={"stripe_customer_id": customer_id})
+
+    print('stripe customer id updated', customer_id)
     pass
 
-def _handle_payment_succeeded(self, invoice_object):
-    # Handle successful payment
+def _handle_subscription_updated(db, subscription_object):
+    print(subscription_object, 'subscription_object')
+    user = user_service.find_user_by_stripe_id(db, id=subscription_object.customer)
+    # user_service.update_user(db, user, user_data={"stripe_customer_id": customer_id})
+    print('stripe subscription id updated')
+    # todo, send an email
     pass
 
-def _handle_payment_failed(self, invoice_object):
-    # Handle failed payment
+def _handle_subscription_deleted(subscription_object):
+    print('calling... _handle_subscription_deleted')
+    # send email
+    pass
+
+def _handle_payment_succeeded(invoice_object):
+    print('calling... _handle_payment_succeeded')
+    # user data
+    # send email, update
+    # record transaction...
+    pass
+
+def _handle_payment_failed(invoice_object):
+    print('calling... _handle_payment_failed')
+    # send email
     pass

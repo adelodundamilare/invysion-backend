@@ -1,12 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class PaymentIntentCreate(BaseModel):
-    amount: int
-    currency: str = 'usd'
+    plan_id: str
+    customer_email: Optional[str] = None
     payment_method_id: Optional[str] = None
-    customer_id: Optional[str] = None
     setup_future_usage: Optional[str] = None
+
+class CheckoutSessionCreate(BaseModel):
+    plan_id: str
+    success_url:str
+    cancel_url:str
+    # payment_method_id: Optional[str] = None
+    # setup_future_usage: Optional[str] = None
 
 class PaymentMethodCreate(BaseModel):
     payment_method_id: str
@@ -24,4 +30,4 @@ class PaymentResponse(BaseModel):
     client_secret: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

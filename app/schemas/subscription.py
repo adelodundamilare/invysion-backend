@@ -19,4 +19,4 @@ class SubscriptionResponse(SubscriptionBase):
     canceled_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
