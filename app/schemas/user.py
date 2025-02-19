@@ -13,7 +13,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: Optional[str] = "user"
-    subscription_plan: Optional[SubscriptionPlan] = SubscriptionPlan.FREE
+    subscription_plan: Optional[str]
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
