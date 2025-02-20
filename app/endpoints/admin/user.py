@@ -43,7 +43,7 @@ def get_user(
         logger.error(f"Error: {str(e)}")
         raise
 
-@router.get("/recent/signups", response_model=List[UserResponse])
+@router.get("/recent/signups")
 def get_recent_signups(
     limit: int = 10,
     db: Session = Depends(get_db),
