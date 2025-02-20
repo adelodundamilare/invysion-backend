@@ -15,7 +15,7 @@ logger = setup_logger("account_api", "account.log")
 router = APIRouter()
 user_service = UserService()
 
-@router.get("/me", response_model=user_schema.UserResponse)
+@router.get("/me")
 async def get_profile(
     current_user: User = Depends(get_current_user)
 ):
@@ -25,7 +25,7 @@ async def get_profile(
         logger.error(f"Error: {str(e)}")
         raise
 
-@router.put("/me", response_model=user_schema.UserResponse)
+@router.put("/me")
 async def update_profile(
     user_update: user_schema.UserUpdate,
     db: Session = Depends(get_db),
