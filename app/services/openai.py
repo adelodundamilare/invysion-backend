@@ -87,7 +87,7 @@ def summarize_text(text: str) -> Optional[str]:
             model="gpt-3.5-turbo",
             messages=[
                 { "role": "system", "content": "You are a dental assistant AI that summarizes text using the SOAP framework. The SOAP format consists of:\n\n- **Subjective (S):** Patient's reported symptoms, concerns, and dental history.\n- **Objective (O):** Clinical findings, test results, and observations from the dental examination.\n- **Assessment (A):** Diagnosis or professional evaluation of the patient's dental condition.\n- **Plan (P):** Recommended treatment, procedures, follow-up care, and next steps.\n\nEnsure that each section is concise, clear, and professionally formatted."},
-                { "role": "user",  "content": "Please summarize the following dental text notes using the SOAP framework:\n\n{text}"}
+                { "role": "user",  "content": f"Please summarize - as a report - this text using the SOAP framework:\n\n{text}"}
             ],
             max_tokens=300,
             temperature=0.7
