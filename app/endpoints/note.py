@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.endpoints.utility import upload_to_cloud
 from app.services.cloudinary import CloudinaryService
 from app.utils.deps import get_current_user, is_note_owner
-from app.schemas.note import Note, NoteUpdate, NoteCreate
+from app.schemas.note import Note, NoteUpdate
 from app.services import note as note_service
 from app.services import folder as folder_service
 from app.services import openai as openai_service
@@ -17,7 +17,7 @@ router = APIRouter()
 cloudinary_service = CloudinaryService()
 
 @router.post("/")
-async def create_note(note_input: NoteCreate, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(folder_id: Optional[int], title: Optional[str], file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         folder_id = note_input.folder_id
         title = note_input.title
