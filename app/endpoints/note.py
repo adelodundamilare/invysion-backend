@@ -19,9 +19,6 @@ cloudinary_service = CloudinaryService()
 @router.post("/")
 async def create_note(folder_id: Optional[int], title: Optional[str], file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
-        folder_id = note_input.folder_id
-        title = note_input.title
-
         file_bytes = await file.read()
 
         duration = note_service.validate_audio_file_and_get_length(file_bytes)
