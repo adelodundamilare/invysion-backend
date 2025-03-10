@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.endpoints.utility import upload_to_cloud
 from app.services.cloudinary import CloudinaryService
 from app.utils.deps import get_current_user, is_note_owner
-from app.schemas.note import Note, NoteUpdate
+from app.schemas.note import Note, NoteUpdate, NoteCreate
 from app.services import note as note_service
 from app.services import folder as folder_service
 from app.services import openai as openai_service
