@@ -14,7 +14,8 @@ class NoteBase(BaseModel):
 
 
 class NoteCreate(NoteBase):
-    folder_id: int
+    folder_id: Optional[int]
+    title: Optional[str]
 
 
 class NoteUpdate(BaseModel):
