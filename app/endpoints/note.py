@@ -17,7 +17,7 @@ router = APIRouter()
 cloudinary_service = CloudinaryService()
 
 @router.post("/")
-async def create_note(folder_id: Optional[int], title: Optional[str], file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_note(folder_id: Optional[int] = None, title: Optional[str] = None, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         file_bytes = await file.read()
 
