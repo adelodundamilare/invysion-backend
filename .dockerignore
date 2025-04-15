@@ -1,0 +1,5 @@
+venv
+logs
+integration.log
+.git
+__pycache__

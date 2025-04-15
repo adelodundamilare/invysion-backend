@@ -49,6 +49,9 @@ app.include_router(admin_plan.router, prefix="/admin/plans", tags=["admin.plan"]
 app.include_router(admin_payment.router, prefix="/admin/payments", tags=["admin.payment"])
 app.include_router(admin_subscription.router, prefix="/admin/subscriptions", tags=["admin.subscription"])
 
+# Increase maximum upload size to 10 MB
+app.max_request_size = 10 * 1024 * 1024
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
