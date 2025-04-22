@@ -3,15 +3,20 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
+# Install required system dependencies for bcrypt
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
-    dnsutils \
-    iputils-ping \
+    python3-dev \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Explicitly install bcrypt with pip
+RUN pip install --no-cache-dir bcrypt
+
 COPY . /app/
 COPY .env /app/.env
 
