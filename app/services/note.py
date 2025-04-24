@@ -97,12 +97,12 @@ def validate_audio_file_and_get_length(file_bytes: bytes) -> float:
         # Get duration in seconds
         duration = audio.info.length
 
-        max_duration = 600  # 10 minutes
-        if duration > max_duration:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Audio file too long. Maximum duration is {max_duration} seconds"
-            )
+        # max_duration = 600  # 10 minutes
+        # if duration > max_duration:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail=f"Audio file too long. Maximum duration is {max_duration} seconds"
+        #     )
 
         return duration
 

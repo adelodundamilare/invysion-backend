@@ -20,7 +20,7 @@ def transcribe_audio(audio_bytes: bytes) -> Optional[str]:
                 response = client.audio.transcriptions.create(
                     model="whisper-1",
                     response_format="verbose_json",
-                    # timestamp_granularities=["word"],
+                    timestamp_granularities=["word"],
                     file=audio_file
                 )
 
