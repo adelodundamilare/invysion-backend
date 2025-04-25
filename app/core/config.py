@@ -43,6 +43,11 @@ class Settings(BaseSettings):
 
     STRIPE_WEBHOOK_SECRET: str
 
+    AWS_KEY: str
+    AWS_SECRET: str
+    AWS_REGION: str
+    AWS_BUCKET: str
+
     # OAuth2
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None

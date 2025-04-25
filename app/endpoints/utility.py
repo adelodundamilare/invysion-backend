@@ -2,13 +2,13 @@
 from fastapi import APIRouter, UploadFile, File
 from app.utils.logger import setup_logger
 from app.services.user import UserService
-from app.services.cloudinary import CloudinaryService
+from app.services.upload import UploadService
 
 logger = setup_logger("utility_api", "utility.log")
 
 router = APIRouter()
 user_service = UserService()
-cloudinary_service = CloudinaryService()
+cloudinary_service = UploadService()
 
 @router.post("/upload-to-cloud")
 async def upload_to_cloud(

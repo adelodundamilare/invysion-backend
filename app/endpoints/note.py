@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.endpoints.utility import upload_to_cloud
-from app.services.cloudinary import CloudinaryService
+from app.services.upload import UploadService
 from app.utils.deps import get_current_user, is_note_owner
 from app.schemas.note import Note, NoteUpdate
 from app.services import note as note_service
@@ -14,7 +14,6 @@ from typing import Optional
 
 logger = setup_logger("note_api", "note.log")
 router = APIRouter()
-cloudinary_service = CloudinaryService()
 
 @router.post("/")
 async def create_note(folder_id: Optional[int] = None, title: Optional[str] = None, file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -25,7 +24,7 @@ async def create_note(folder_id: Optional[int] = None, title: Optional[str] = No
 
         transcribed_text = openai_service.transcribe_audio(file_bytes)
         summarized_text = openai_service.summarize_text(transcribed_text)
-        recording_url = cloudinary_service.upload_file(file_bytes)
+        recording_url = UploadService().upload_file(file_bytes, folder="audio")
 
         if not folder_id:
             folder_id = folder_service.get_or_create_uncategorized_folder(db, current_user.id)
