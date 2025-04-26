@@ -22,7 +22,8 @@ async def create_note(folder_id: Optional[int] = None, title: Optional[str] = No
 
         duration = note_service.validate_audio_file_and_get_length(file_bytes)
 
-        transcribed_text = openai_service.transcribe_audio(file_bytes)
+        # transcribed_text = openai_service.transcribe_audio(file_bytes)
+        transcribed_text = openai_service.transcribe_long_audio(file_bytes)
         summarized_text = openai_service.summarize_text(transcribed_text)
         recording_url = UploadService().upload_file(file_bytes, folder="audio")
 
