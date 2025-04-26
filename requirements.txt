@@ -13,11 +13,11 @@ auth0-python==4.8.1
 backoff==2.2.1
 bcrypt==4.2.1
 blinker==1.9.0
-boto3==1.38.1
-botocore==1.38.1
+boto3==1.38.3
+botocore==1.38.3
 build==1.2.2.post1
 cachetools==5.5.2
-certifi==2024.12.14
+certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.1
 chroma-hnswlib==0.7.6
@@ -42,10 +42,12 @@ et_xmlfile==2.0.0
 executing==2.2.0
 fastapi==0.115.6
 fastapi-cli==0.0.7
+ffmpeg-python==0.2.0
 filelock==3.17.0
 flatbuffers==25.2.10
 frozenlist==1.5.0
 fsspec==2025.2.0
+future==1.0.0
 google-auth==2.38.0
 googleapis-common-protos==1.69.0
 greenlet==3.1.1
@@ -185,7 +187,7 @@ typing_extensions==4.12.2
 tzdata==2025.1
 tzlocal==5.3.1
 ujson==5.10.0
-urllib3==2.3.0
+urllib3==2.4.0
 uv==0.6.4
 uvicorn==0.34.0
 watchfiles==1.0.4
