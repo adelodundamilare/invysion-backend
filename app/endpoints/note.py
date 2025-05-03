@@ -25,7 +25,7 @@ async def create_note(folder_id: Optional[int] = None, title: Optional[str] = No
         # transcribed_text = openai_service.transcribe_audio(file_bytes)
         transcribed_text = openai_service.transcribe_long_audio(file_bytes)
         summarized_text = openai_service.summarize_text(transcribed_text)
-        recording_url = UploadService().upload_file(file_bytes, folder="audio")
+        recording_url = UploadService().upload_audio(file_bytes, folder="audio")
 
         if not folder_id:
             folder_id = folder_service.get_or_create_uncategorized_folder(db, current_user.id)

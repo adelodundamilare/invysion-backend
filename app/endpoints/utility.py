@@ -8,7 +8,6 @@ logger = setup_logger("utility_api", "utility.log")
 
 router = APIRouter()
 user_service = UserService()
-cloudinary_service = UploadService()
 
 @router.post("/upload-to-cloud")
 async def upload_to_cloud(
@@ -18,8 +17,8 @@ async def upload_to_cloud(
 ):
     try:
         file_bytes = await file.read()
-        res = cloudinary_service.upload_file(file_bytes)
-        return {"message": "File uploaded successfully", "url": res}
+        url = UploadService().upload_profile_picture(file_bytes)
+        return {"message": "File uploaded successfully", "url": url}
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise
